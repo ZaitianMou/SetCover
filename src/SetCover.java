@@ -14,6 +14,7 @@ class sortBySubsetsLength implements Comparator<Subset>{
     }
 }
 
+
 public class SetCover {
     static ArrayList results=new ArrayList();
     static int num=0;
@@ -22,7 +23,7 @@ public class SetCover {
         long timeStart=System.nanoTime();
 
         ArrayList subsetsSelected=new ArrayList();
-        String fileName = "s-rg-40-20";
+        String fileName = "s-rg-63-25";
         File file = new File(fileName);
         try {
             Scanner fileRead = new Scanner(file);
@@ -117,7 +118,8 @@ public class SetCover {
                 System.out.println(subsets.get(i).returnTheSubset());
             }
 
-            int[] elementsOfSubsetsSelected=new int[sizeOfUniverse];
+            //the first element here is the number of non-zero entries in this array
+            int[] elementsOfSubsetsSelected=new int[sizeOfUniverse+1];
 
             backtrack(subsets,subsetsSelected,elementsOfSubsetsSelected,sizeOfUniverse,0,count);
 
@@ -152,6 +154,7 @@ public class SetCover {
 //            System.out.print("  ");
 //        }
 //        System.out.println();
+//        System.out.println(Arrays.toString(elementsOfSubsetsSelected));
 
         if (isValid(subsetsSelected, elementsOfSubsetsSelected, sizeOfUniverse, minSize)) {
 
@@ -184,7 +187,9 @@ public class SetCover {
                 n++;
                 subsetsSelected.add(candidates.get(i));
                 for (int j=0;j<(candidates.get(i)).subset.length;j++) {
-                    elementsOfSubsetsSelected[((Subset)(subsetsSelected.get(subsetsSelected.size()-1))).subset[j]-1]++;
+                    int element=((Subset)(subsetsSelected.get(subsetsSelected.size()-1 ))).subset[j];
+                    if (elementsOfSubsetsSelected[element]==0) elementsOfSubsetsSelected[0]++;
+                    elementsOfSubsetsSelected[element]++;
                 }
 
                 if ((subsetsSelected.size()<results.size()) || (results.size()==0)) {
@@ -193,7 +198,9 @@ public class SetCover {
 
                 if (subsetsSelected.size()!=0) {
                     for (int j = 0; j < (((Subset) subsetsSelected.get(subsetsSelected.size() - 1))).subset.length; j++) {
-                        elementsOfSubsetsSelected[((Subset) (subsetsSelected.get(subsetsSelected.size() - 1))).subset[j] - 1]--;
+                        int element=((Subset) (subsetsSelected.get(subsetsSelected.size() -1 ))).subset[j];
+                        if (elementsOfSubsetsSelected[element]==1) elementsOfSubsetsSelected[0]--;
+                        elementsOfSubsetsSelected[element]--;
                     }
                     subsetsSelected.remove(subsetsSelected.size() - 1);
                 }
@@ -216,7 +223,7 @@ public class SetCover {
             boolean couldBeDiscard=true;
             for (int j=0;j<((Subset)subsets.get(i)).subset.length;j++){
                 //System.out.println(((Subset)subsets.get(i)).subset[j]);
-                if (elementsOfSubsetsSelected[((Subset)subsets.get(i)).subset[j]-1]<1){
+                if (elementsOfSubsetsSelected[((Subset)subsets.get(i)).subset[j]]<1){
                     couldBeDiscard=false;
                 }
             }
@@ -227,21 +234,18 @@ public class SetCover {
     }
 
     //check whether the subsets of subset cover all the elements in the universe
-    static boolean isValid(ArrayList subsetsSelected,int[]elementOfSubsetsSelected,int sizeOfUniverse,int minSize){
+    static boolean isValid(ArrayList subsetsSelected,int[]elementsOfSubsetsSelected,int sizeOfUniverse,int minSize){
         //if the size of subsetsSelected is less than minSize, then it means obviously it's not sufficient.
         //Then i just return false, without doing the execution below.
 
-        if (subsetsSelected.size()<minSize){
-            return false;
-        }
+//        if (subsetsSelected.size()<minSize){
+//            return false;
+//        }
 
         //Then start
-        boolean t=true;
-        for (int i=0;i<elementOfSubsetsSelected.length;i++){
-
-            if (elementOfSubsetsSelected[i]<1) t=false;
-        }
-        return t;
+        if (elementsOfSubsetsSelected[0]==elementsOfSubsetsSelected.length-1) return true;
+        else
+            return false;
     }
 }
 class Subset{
