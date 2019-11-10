@@ -13,8 +13,6 @@ class sortBySubsetsLength implements Comparator<Subset>{
         else return 1;
     }
 }
-
-
 public class SetCover {
     static ArrayList results=new ArrayList();
     static int num=0;
@@ -23,7 +21,7 @@ public class SetCover {
         long timeStart=System.nanoTime();
 
         ArrayList subsetsSelected=new ArrayList();
-        String fileName = "s-rg-63-25";
+        String fileName = "s-k-40-60";
         File file = new File(fileName);
         try {
             Scanner fileRead = new Scanner(file);
@@ -54,14 +52,14 @@ public class SetCover {
 
 
             //find unique element
-            //it seems doesn't work
+            //it seems doesn't work much
             int numOfUniqueElement=0;
             for (int i=0;i<sizeOfUniverse;i++){
                 if (elementsOfUniverse[i]==1){
                     numOfUniqueElement++;
                 }
             }
-            System.out.println(">>>>>>UNIQUE Element number: "+numOfUniqueElement);
+            System.out.println("UNIQUE Element number: "+numOfUniqueElement);
 
 
             //find those subsets that contains only one or two elements
@@ -86,46 +84,48 @@ public class SetCover {
             System.out.println("Size of Subsets after removing subsets that have only one elements " +
                     "and contained by other subsets: "+subsets.size());
 
+//            //obtain the minimum number of subsets needed
+//            ArrayList<Subset> tempSubsets = new ArrayList<>();
+//            for (int j = 0; j < subsets.size(); j++) {
+//                tempSubsets.add(subsets.get(j));
+//            }
+//            int tempSize = sizeOfUniverse;
+//            int count = 0;
+//            while (tempSize > 0) {
+//                int maxLength = 0;
+//                int indexOfMaxSize=0;
+//                for (int i=0; i < tempSubsets.size(); i++) {
+//                    if (tempSubsets.get(i).subset.length > maxLength) {
+//                        maxLength = tempSubsets.get(i).subset.length;
+//                        indexOfMaxSize=i;
+//                    }
+//                }
+//                tempSubsets.remove(indexOfMaxSize);
+//                tempSize -= maxLength;
+//                count++;
+//            }
+//            //Then count is the minimum size;
 
-            //obtain the minimum number of subsets needed
-            ArrayList<Subset> tempSubsets = new ArrayList<>();
-            for (int j = 0; j < subsets.size(); j++) {
-                tempSubsets.add(subsets.get(j));
-            }
-            int tempSize = sizeOfUniverse;
-            int count = 0;
-            while (tempSize > 0) {
-                int maxLength = 0;
-                int indexOfMaxSize=0;
-                for (int i=0; i < tempSubsets.size(); i++) {
-                    if (tempSubsets.get(i).subset.length > maxLength) {
-                        maxLength = tempSubsets.get(i).subset.length;
-                        indexOfMaxSize=i;
-                    }
-                }
-                tempSubsets.remove(indexOfMaxSize);
-                tempSize -= maxLength;
-                count++;
-            }
-            //Then count is the minimum size;
 
-
-            //prune again, sort the subsets based on the length of each subset
+            //Sort the subsets based on the length of each subset
             Collections.sort(subsets,new sortBySubsetsLength());
-
+            System.out.println("Here are all the subsets after removing unnecessary subsets and sorting");
             //print all the subsets
             for (int i=0;i<subsets.size();i++) {
-                System.out.println(subsets.get(i).returnTheSubset());
+                System.out.println("-"+subsets.get(i).returnTheSubset());
             }
 
             //the first element here is the number of non-zero entries in this array
             int[] elementsOfSubsetsSelected=new int[sizeOfUniverse+1];
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+            System.out.println(">>>>>>>START BACKTRACKING>>>>>>>>>");
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-            backtrack(subsets,subsetsSelected,elementsOfSubsetsSelected,sizeOfUniverse,0,count);
+            backtrack(subsets,subsetsSelected,elementsOfSubsetsSelected);
 
             //ending
             long timeEnd=System.nanoTime();
-            System.out.println();
+
             System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
             System.out.println(">>>>>>>Congratulation!>>>>>>>>>>>");
             System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
@@ -145,7 +145,7 @@ public class SetCover {
         }
     }
 
-    static void backtrack(ArrayList subsets,ArrayList subsetsSelected, int[] elementsOfSubsetsSelected, int sizeOfUniverse,int n,int minSize) {
+    static void backtrack(ArrayList subsets,ArrayList subsetsSelected, int[] elementsOfSubsetsSelected) {
         num++;
         //print subsetSelected
 //        System.out.print("--"+results.size()+"-"+subsetsSelected.size());
@@ -156,7 +156,7 @@ public class SetCover {
 //        System.out.println();
 //        System.out.println(Arrays.toString(elementsOfSubsetsSelected));
 
-        if (isValid(subsetsSelected, elementsOfSubsetsSelected, sizeOfUniverse, minSize)) {
+        if (isValid(elementsOfSubsetsSelected)) {
 
             //process solution
             if (results.size()==0) {
@@ -180,11 +180,11 @@ public class SetCover {
 
         }
         else{
-            ArrayList<Subset> candidates= new ArrayList<>();
-            candidates=constructCandidates(subsets,n,subsetsSelected,elementsOfSubsetsSelected);
+            ArrayList<Subset> candidates;
+            candidates=constructCandidates(subsets,subsetsSelected,elementsOfSubsetsSelected);
 
             for(int i=0;i<candidates.size();i++){
-                n++;
+                //n++;
                 subsetsSelected.add(candidates.get(i));
                 for (int j=0;j<(candidates.get(i)).subset.length;j++) {
                     int element=((Subset)(subsetsSelected.get(subsetsSelected.size()-1 ))).subset[j];
@@ -193,7 +193,7 @@ public class SetCover {
                 }
 
                 if ((subsetsSelected.size()<results.size()) || (results.size()==0)) {
-                    backtrack(subsets,subsetsSelected,elementsOfSubsetsSelected,sizeOfUniverse,n,minSize);
+                    backtrack(subsets,subsetsSelected,elementsOfSubsetsSelected);
                 }
 
                 if (subsetsSelected.size()!=0) {
@@ -205,11 +205,11 @@ public class SetCover {
                     subsetsSelected.remove(subsetsSelected.size() - 1);
                 }
             }
-            n--;
+            //n--;
         }
     }
 
-    static ArrayList<Subset> constructCandidates(ArrayList subsets, int n, ArrayList subsetSelected,int[] elementsOfSubsetsSelected){
+    static ArrayList<Subset> constructCandidates(ArrayList subsets, ArrayList subsetSelected,int[] elementsOfSubsetsSelected){
 
         ArrayList candidates= new ArrayList();
         if (subsetSelected.size()==0)
@@ -234,10 +234,9 @@ public class SetCover {
     }
 
     //check whether the subsets of subset cover all the elements in the universe
-    static boolean isValid(ArrayList subsetsSelected,int[]elementsOfSubsetsSelected,int sizeOfUniverse,int minSize){
+    static boolean isValid(int[]elementsOfSubsetsSelected){
         //if the size of subsetsSelected is less than minSize, then it means obviously it's not sufficient.
         //Then i just return false, without doing the execution below.
-
 //        if (subsetsSelected.size()<minSize){
 //            return false;
 //        }
